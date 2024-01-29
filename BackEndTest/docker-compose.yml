@@ -1,0 +1,37 @@
+version: '3.4'
+
+networks:
+  backend:
+
+
+services:
+  sqlserver:
+    container_name: sql-server
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    ports:
+      - 8002:1433
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=organizadorTeste123
+    networks:
+      - backend
+
+
+  backendtest:
+    container_name: backendOrganizer
+    image: ${DOCKER_REGISTRY-}backendtest
+    build:
+      context: .
+      dockerfile: BackEndTest/Dockerfile
+    ports:
+      - 8001:80
+    depends_on:
+      - sqlserver
+    environment:
+      - DB_HOST=sqlserver
+      - DB_NAME=backendOrganizer
+      - DB_SA_PASSWORD=organizadorTeste123
+    networks:
+      - backend
+
+
