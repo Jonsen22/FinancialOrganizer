@@ -12,6 +12,7 @@
   <ItemGroup>
     <PackageReference Include="FakeItEasy" Version="8.1.0" />
     <PackageReference Include="FluentAssertions" Version="6.12.0" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.3.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
     <PackageReference Include="ReportGenerator" Version="5.2.0" />
@@ -27,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BackEnd\BackEndTest\BackEnd.csproj" />
+    <ProjectReference Include="..\BackEnd\BackEnd\BackEnd.csproj" />
   </ItemGroup>
 
 </Project>

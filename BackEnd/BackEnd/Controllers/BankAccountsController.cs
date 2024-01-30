@@ -32,7 +32,7 @@ namespace BackEndTest.Controllers
 
         // GET: api/BankAccounts
         [HttpGet("GetBankAccountsByUser")]
-        public async Task<ActionResult<IEnumerable<BankAccount>>> GetBankAccountsByUser()
+        public async Task<ActionResult<IEnumerable<BankAccountDTO>>> GetBankAccountsByUser()
         {
             try
             {
@@ -41,7 +41,7 @@ namespace BackEndTest.Controllers
             var bankAccounts = await _repository.GetBankAccountsByUser(currentUserId);
             var bankAccountsRetorno = _mapper.Map<IEnumerable<BankAccountDTO>>(bankAccounts);
 
-            return bankAccountsRetorno.Any() ? Ok(bankAccountsRetorno) : BadRequest("No registers");
+            return bankAccountsRetorno.Any() ? Ok(bankAccountsRetorno) : NotFound("No registers");
             }
             catch (Exception e)
             {
@@ -56,7 +56,7 @@ namespace BackEndTest.Controllers
             try
             {
 
-            if (bankAccountDTO == null) return BadRequest("unregistered bank accounts");
+            if (bankAccountDTO == null) return BadRequest("Object null");
 
             string? currentUserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -82,6 +82,8 @@ namespace BackEndTest.Controllers
             try
             {
                 var bankAccount = await _repository.GetBankAccountById(bankAccountId);
+
+                if (bankAccount == null) return NotFound("Bank Account not found");
 
                 string? currentUserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -109,6 +111,8 @@ namespace BackEndTest.Controllers
             {
 
                 var bankAccountDelete = await _repository.GetBankAccountById(bankAccountId);
+
+                if (bankAccountDelete == null) return NotFound("Bank Account not found");
 
                 string? currentUserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
 

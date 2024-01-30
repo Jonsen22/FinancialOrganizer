@@ -1,4 +1,5 @@
-﻿using Organizer.Models;
+﻿using BackEndTest.DTOs;
+using Organizer.Models;
 
 namespace BackEndTest.Repository.Interfaces
 {

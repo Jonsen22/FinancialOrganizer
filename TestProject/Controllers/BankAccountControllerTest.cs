@@ -57,12 +57,12 @@ namespace TestProject.Controllers
 
             // Assert
             var badRequestResult = result as BadRequestObjectResult;
-            badRequestResult?.Value.Should().Be("unregistered bank accounts");
+            badRequestResult?.Value.Should().Be("Object null");
             badRequestResult?.StatusCode.Should().Be(400);
         }
 
         [Fact]
-        public async Task GetBankAccount_ReturnsOkResult_WhenBankAccountExists()
+        public async Task GetBankAccountsByUser_ReturnsOkResult_WhenBankAccountExists()
         {
             // Arrange
             var repository = A.Fake<IBankAccountRepository>();
@@ -81,7 +81,6 @@ namespace TestProject.Controllers
                     Name = "Nubank",
                     Balance = 1500
                 },
-                // Add more BankAccount instances as needed
             };
 
             A.CallTo(() => repository.GetBankAccountsByUser(userId)).Returns(existingBankAccounts);
@@ -95,21 +94,49 @@ namespace TestProject.Controllers
 
         }
 
-        //[Fact]
-        //public async Task GetBankAccount_ReturnsNotFoundResult_WhenBankAccountDoesNotExist()
-        //{
-        //    // Arrange
-        //    var repository = A.Fake<IBankAccountRepository>();
-        //    var mapper = A.Fake<IMapper>();
-        //    var bankAccountController = new BankAccountsController(repository, mapper);
+        [Fact]
+        public async Task GetBankAccountsByUser_ReturnsNotFoundResult_WhenBankAccountDoesNotExist()
+        {
+            // Arrange
+            var repository = A.Fake<IBankAccountRepository>();
+            var mapper = A.Fake<IMapper>();
+            var bankAccountController = new BankAccountsController(repository, mapper);
 
-        //    A.CallTo(() => repository.GetByIdAsync(2)).Returns(null); // Simulate a non-existing bank account
+            var userId = "testuser";
+            ControllerTestHelper.SetAuthenticatedUser(bankAccountController, userId);
 
-        //    // Act
-        //    var result = await bankAccountController.GetBankAccount(2);
+            var existingBankAccounts = new List<BankAccount>();
 
-        //    // Assert
-        //    Assert.IsType<NotFoundResult>(result);
-        //}
+            A.CallTo(() => repository.GetBankAccountsByUser(userId)).Returns(existingBankAccounts);
+
+            // Act
+            var result = await bankAccountController.GetBankAccountsByUser();
+
+            // Assert
+            Assert.IsType<ActionResult<IEnumerable<BankAccountDTO>>>(result);
+            var notFoundResult = result.Result as NotFoundObjectResult;
+            Assert.NotNull(notFoundResult);
+            Assert.Equal(404, notFoundResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task GetBankAccountsByUser_Exception_WhenBankAccountDoesNotExist()
+        {
+            // Arrange
+            var repository = A.Fake<IBankAccountRepository>();
+            var mapper = A.Fake<IMapper>();
+            var bankAccountController = new BankAccountsController(repository, mapper);
+
+            var userId = "testuser";
+            ControllerTestHelper.SetAuthenticatedUser(bankAccountController, userId);
+            A.CallTo(() => repository.GetBankAccountsByUser(userId)).Throws<Exception>(); 
+
+            // Act
+            var result = await bankAccountController.GetBankAccountsByUser();
+
+            // Assert
+            var statusCodeResult = Assert.IsType<ObjectResult>(result.Result);
+            Assert.Equal(500, statusCodeResult.StatusCode);
+        }
     }
 }
