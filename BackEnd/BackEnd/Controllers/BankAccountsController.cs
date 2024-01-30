@@ -48,7 +48,7 @@ namespace BackEndTest.Controllers
                 Log.Error(e, "An error occurred: {ErrorMessage}", e.Message);
                 return (StatusCode(500, "Unexpected Error"));
             }
-}
+        }
 
         [HttpPost]
         public async Task<IActionResult> PostBankAccount(BankAccountAddDTO bankAccountDTO)
