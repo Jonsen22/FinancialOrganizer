@@ -30,13 +30,5 @@ namespace BackEndTest.Repository
 
             return bankAccount;
         }
-
-
-        public bool Add(BankAccount bankAccount)
-        {
-            _context.Add(bankAccount);
-            var saved = _context.SaveChanges();
-            return saved > 0 ? true : false;
-        }
     }
 }

@@ -34,12 +34,14 @@ builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 
 var dbHost = Environment.GetEnvironmentVariable("DB_HOST")?? "localhost,8002";
 var dbName = Environment.GetEnvironmentVariable("DB_NAME")?? "backendOrganizer";
-var dbPassword = Environment.GetEnvironmentVariable("DB_SA_PASSWORD") ?? "organizadorTeste123";
-var connectionString = $"Server=tcp:{dbHost};Database={dbName};User Id=sa;Password={dbPassword};Encrypt=False;Integrated Security=false;TrustServerCertificate=True";
+var dbPassword = Environment.GetEnvironmentVariable("DB_SA_PASSWORD") ?? "password@12345#";
+var connectionString = $"Data Source={dbHost};Initial Catalog={dbName};User ID=sa;Password={dbPassword};TrustServerCertificate=true";
 
 builder.Services.AddDbContext<AppDbContext>(options
     => options.UseSqlServer(connectionString));
 
+//builder.Services.AddDbContext<AppDbContext>(options
+//    => options.UseSqlServer(builder.Configuration.GetConnectionString("production")));
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -52,8 +54,8 @@ Log.Logger = new LoggerConfiguration()
         })
     .CreateLogger();
 
-//builder.Services.AddDbContext<AppDbContext>(options
-//    => options.UseSqlServer(builder.Configuration.GetConnectionString("production")));
+
+
 
 
 builder.Services.AddAuthorization();
@@ -80,6 +82,12 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
 }
 
 app.MapGroup("api/auth")

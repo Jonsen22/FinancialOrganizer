@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Azure;
 using BackEndTest.Controllers;
 using BackEndTest.DTOs;
 using BackEndTest.Repository.Interfaces;
@@ -129,7 +130,7 @@ namespace TestProject.Controllers
 
             var userId = "testuser";
             ControllerTestHelper.SetAuthenticatedUser(bankAccountController, userId);
-            A.CallTo(() => repository.GetBankAccountsByUser(userId)).Throws<Exception>(); 
+            A.CallTo(() => repository.GetBankAccountsByUser(userId)).Throws<Exception>();
 
             // Act
             var result = await bankAccountController.GetBankAccountsByUser();
@@ -137,6 +138,57 @@ namespace TestProject.Controllers
             // Assert
             var statusCodeResult = Assert.IsType<ObjectResult>(result.Result);
             Assert.Equal(500, statusCodeResult.StatusCode);
+        }
+        [Fact]
+        public async Task PutBankAccount_ReturnsOkResult()
+        {
+            // Arrange
+            var repository = A.Fake<IBankAccountRepository>();
+            var mapper = A.Fake<IMapper>();
+            var controller = new BankAccountsController(repository, mapper);
+
+            var userId = "testuser";
+            var userClaims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.NameIdentifier, userId)
+                };
+            var userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(userClaims));
+            controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = userPrincipal }
+            };
+
+            var bankAccountId = 1;
+            var bankAccountDTO = new BankAccountAddDTO
+            {
+                Name = "teste",
+                Balance = 300
+            };
+            var bankAccount = new BankAccount
+            {
+                BankAccountId = bankAccountId,
+                Name = "teste",
+                UserId = userId,
+                Balance = 5000
+            };
+
+            A.CallTo(() => repository.GetBankAccountById(bankAccountId)).Returns(bankAccount);
+            A.CallTo(() => mapper.Map<BankAccount>(A<BankAccountAddDTO>._))
+                .Returns(bankAccount);
+            A.CallTo(() => repository.SaveChanges()).Returns(true);
+
+            // Act
+            var result = await controller.PutBankAccount(bankAccountId, bankAccountDTO);
+
+            // Assert
+            var okResult = result as OkObjectResult;
+            Assert.NotNull(okResult); 
+            var response = Assert.IsAssignableFrom<BankAccount>(okResult.Value);
+            //Assert.Equal(bankAccount.BankAccountId, response.BankAccountId);
+            Assert.Equal(bankAccount.Name, response.Name);
+            Assert.Equal(bankAccount.Balance, response.Balance);
+
+
         }
     }
 }

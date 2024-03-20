@@ -9,18 +9,18 @@ using Organizer.Context;
 
 #nullable disable
 
-namespace BackEndTest.Migrations
+namespace BackEnd.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240110201706_Initial")]
-    partial class Initial
+    [Migration("20240320160159_Migracao_Inicial")]
+    partial class Migracao_Inicial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.0")
+                .HasAnnotation("ProductVersion", "8.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);

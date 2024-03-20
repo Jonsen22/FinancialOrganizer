@@ -92,8 +92,8 @@ namespace BackEndTest.Controllers
 
                 var bankAccountUpdate = _mapper.Map(bankAccountDTO, bankAccount);
                 _repository.Update(bankAccountUpdate);
-                var response = _mapper.Map<BankAccountDTO>(bankAccountUpdate);
-                return await _repository.SaveChanges() ? Ok(response) : BadRequest("Action not possible");
+
+                return await _repository.SaveChanges() ? Ok(bankAccountUpdate) : BadRequest("Action not possible");         
             }
             catch (Exception e)
             {

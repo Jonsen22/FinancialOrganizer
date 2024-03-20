@@ -8,7 +8,7 @@ using Organizer.Context;
 
 #nullable disable
 
-namespace BackEndTest.Migrations
+namespace BackEnd.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     partial class AppDbContextModelSnapshot : ModelSnapshot
@@ -17,7 +17,7 @@ namespace BackEndTest.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.0")
+                .HasAnnotation("ProductVersion", "8.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -239,7 +239,7 @@ namespace BackEndTest.Migrations
 
                     b.HasKey("BankAccountId");
 
-                    b.ToTable("BankAccounts", (string)null);
+                    b.ToTable("BankAccounts");
                 });
 
             modelBuilder.Entity("Organizer.Models.Category", b =>
@@ -261,7 +261,7 @@ namespace BackEndTest.Migrations
 
                     b.HasKey("CategoryId");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("Organizer.Models.Transaction", b =>
@@ -306,7 +306,7 @@ namespace BackEndTest.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Transactions", (string)null);
+                    b.ToTable("Transactions");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

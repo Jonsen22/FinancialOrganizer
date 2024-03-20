@@ -1,4 +1,4 @@
-﻿using Organizer.Enums;
+﻿
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Organizer.Models

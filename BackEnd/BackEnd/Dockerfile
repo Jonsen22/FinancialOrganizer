@@ -9,17 +9,17 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["BackEndTest/BackEndTest.csproj", "BackEndTest/"]
-RUN dotnet restore "./BackEndTest/./BackEndTest.csproj"
+COPY ["BackEnd/BackEnd.csproj", "BackEnd/"]
+RUN dotnet restore "./BackEnd/./BackEnd.csproj"
 COPY . .
-WORKDIR "/src/BackEndTest"
-RUN dotnet build "./BackEndTest.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/BackEnd"
+RUN dotnet build "./BackEnd.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./BackEndTest.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./BackEnd.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "BackEndTest.dll"]
+ENTRYPOINT ["dotnet", "BackEnd.dll"]
