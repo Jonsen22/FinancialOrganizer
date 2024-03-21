@@ -41,7 +41,7 @@ namespace BackEndTest.Controllers
             var bankAccounts = await _repository.GetBankAccountsByUser(currentUserId);
             var bankAccountsRetorno = _mapper.Map<IEnumerable<BankAccountDTO>>(bankAccounts);
 
-            return bankAccountsRetorno.Any() ? Ok(bankAccountsRetorno) : NotFound("No registers");
+            return bankAccountsRetorno.Any() ? Ok(bankAccounts) : NotFound("No registers");
             }
             catch (Exception e)
             {
@@ -65,9 +65,7 @@ namespace BackEndTest.Controllers
 
             _repository.Add(bankAccountAdd);
 
-            var response = _mapper.Map<BankAccountDTO>(bankAccountAdd);
-
-            return await _repository.SaveChanges() ? Ok(response) : BadRequest("Action not possible");
+            return await _repository.SaveChanges() ? Ok(bankAccountAdd) : BadRequest("Action not possible");
             }
             catch (Exception e)
             {

@@ -2,6 +2,7 @@
 using Azure;
 using BackEndTest.Controllers;
 using BackEndTest.DTOs;
+using BackEndTest.Helpers;
 using BackEndTest.Repository.Interfaces;
 using FakeItEasy;
 using FluentAssertions;
@@ -21,15 +22,21 @@ namespace TestProject.Controllers
 {
     public class BankAccountControllerTest
     {
+        private IBankAccountRepository _repository;
+        private IMapper _mapper;
+        private BankAccountsController _controller;
+        public BankAccountControllerTest()
+        {
+            _repository = A.Fake<IBankAccountRepository>();
+            var config = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfiles>());
+            _mapper = config.CreateMapper();
+            _controller = new BankAccountsController(_repository, _mapper);
+        }
         [Fact]
         public async Task PostBankAccount_ReturnsOkResult()
         {
             //Arrange
-            var repository = A.Fake<IBankAccountRepository>();
-            var mapper = A.Fake<IMapper>();
-            var bankAccountController = new BankAccountsController(repository, mapper);
-
-            ControllerTestHelper.SetAuthenticatedUser(bankAccountController, "testuser");
+            ControllerTestHelper.SetAuthenticatedUser(_controller, "testuser");
 
             var bankAccountDto = new BankAccountAddDTO
             {
@@ -37,7 +44,7 @@ namespace TestProject.Controllers
                 Name = "Nubank"
             };
 
-            var result = await bankAccountController.PostBankAccount(bankAccountDto);
+            var result = await _controller.PostBankAccount(bankAccountDto);
 
             // Assert
             var okResult = result as OkObjectResult;
@@ -48,13 +55,10 @@ namespace TestProject.Controllers
         [Fact]
         public async Task PostBankAccount_ReturnsErrorResult()
         {
-            var repository = A.Fake<IBankAccountRepository>();
-            var mapper = A.Fake<IMapper>();
-            var bankAccountController = new BankAccountsController(repository, mapper);
 
-            ControllerTestHelper.SetAuthenticatedUser(bankAccountController, "testuser");
+            ControllerTestHelper.SetAuthenticatedUser(_controller, "testuser");
 
-            var result = await bankAccountController.PostBankAccount(null);
+            var result = await _controller.PostBankAccount(null);
 
             // Assert
             var badRequestResult = result as BadRequestObjectResult;
@@ -66,12 +70,8 @@ namespace TestProject.Controllers
         public async Task GetBankAccountsByUser_ReturnsOkResult_WhenBankAccountExists()
         {
             // Arrange
-            var repository = A.Fake<IBankAccountRepository>();
-            var mapper = A.Fake<IMapper>();
-            var bankAccountController = new BankAccountsController(repository, mapper);
-
             var userId = "testuser";
-            ControllerTestHelper.SetAuthenticatedUser(bankAccountController, userId);
+            ControllerTestHelper.SetAuthenticatedUser(_controller, userId);
 
             var existingBankAccounts = new List<BankAccount>
             {
@@ -84,14 +84,14 @@ namespace TestProject.Controllers
                 },
             };
 
-            A.CallTo(() => repository.GetBankAccountsByUser(userId)).Returns(existingBankAccounts);
+            A.CallTo(() => _repository.GetBankAccountsByUser(userId)).Returns(existingBankAccounts);
 
             // Act
-            var result = await bankAccountController.GetBankAccountsByUser();
+            var result = await _controller.GetBankAccountsByUser();
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(userId, bankAccountController.User.FindFirstValue(ClaimTypes.NameIdentifier));
+            Assert.Equal(userId, _controller.User.FindFirstValue(ClaimTypes.NameIdentifier));
 
         }
 
@@ -99,19 +99,16 @@ namespace TestProject.Controllers
         public async Task GetBankAccountsByUser_ReturnsNotFoundResult_WhenBankAccountDoesNotExist()
         {
             // Arrange
-            var repository = A.Fake<IBankAccountRepository>();
-            var mapper = A.Fake<IMapper>();
-            var bankAccountController = new BankAccountsController(repository, mapper);
 
             var userId = "testuser";
-            ControllerTestHelper.SetAuthenticatedUser(bankAccountController, userId);
+            ControllerTestHelper.SetAuthenticatedUser(_controller, userId);
 
             var existingBankAccounts = new List<BankAccount>();
 
-            A.CallTo(() => repository.GetBankAccountsByUser(userId)).Returns(existingBankAccounts);
+            A.CallTo(() => _repository.GetBankAccountsByUser(userId)).Returns(existingBankAccounts);
 
             // Act
-            var result = await bankAccountController.GetBankAccountsByUser();
+            var result = await _controller.GetBankAccountsByUser();
 
             // Assert
             Assert.IsType<ActionResult<IEnumerable<BankAccountDTO>>>(result);
@@ -124,28 +121,23 @@ namespace TestProject.Controllers
         public async Task GetBankAccountsByUser_Exception_WhenBankAccountDoesNotExist()
         {
             // Arrange
-            var repository = A.Fake<IBankAccountRepository>();
-            var mapper = A.Fake<IMapper>();
-            var bankAccountController = new BankAccountsController(repository, mapper);
 
             var userId = "testuser";
-            ControllerTestHelper.SetAuthenticatedUser(bankAccountController, userId);
-            A.CallTo(() => repository.GetBankAccountsByUser(userId)).Throws<Exception>();
+            ControllerTestHelper.SetAuthenticatedUser(_controller, userId);
+            A.CallTo(() => _repository.GetBankAccountsByUser(userId)).Throws<Exception>();
 
             // Act
-            var result = await bankAccountController.GetBankAccountsByUser();
+            var result = await _controller.GetBankAccountsByUser();
 
             // Assert
             var statusCodeResult = Assert.IsType<ObjectResult>(result.Result);
             Assert.Equal(500, statusCodeResult.StatusCode);
         }
+
         [Fact]
         public async Task PutBankAccount_ReturnsOkResult()
         {
             // Arrange
-            var repository = A.Fake<IBankAccountRepository>();
-            var mapper = A.Fake<IMapper>();
-            var controller = new BankAccountsController(repository, mapper);
 
             var userId = "testuser";
             var userClaims = new List<Claim>
@@ -153,7 +145,7 @@ namespace TestProject.Controllers
                     new Claim(ClaimTypes.NameIdentifier, userId)
                 };
             var userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(userClaims));
-            controller.ControllerContext = new ControllerContext
+            _controller.ControllerContext = new ControllerContext
             {
                 HttpContext = new DefaultHttpContext { User = userPrincipal }
             };
@@ -172,23 +164,117 @@ namespace TestProject.Controllers
                 Balance = 5000
             };
 
-            A.CallTo(() => repository.GetBankAccountById(bankAccountId)).Returns(bankAccount);
-            A.CallTo(() => mapper.Map<BankAccount>(A<BankAccountAddDTO>._))
-                .Returns(bankAccount);
-            A.CallTo(() => repository.SaveChanges()).Returns(true);
+            A.CallTo(() => _repository.GetBankAccountById(bankAccountId)).Returns(bankAccount);
+            A.CallTo(() => _repository.SaveChanges()).Returns(true);
 
             // Act
-            var result = await controller.PutBankAccount(bankAccountId, bankAccountDTO);
+            var result = await _controller.PutBankAccount(bankAccountId, bankAccountDTO);
 
             // Assert
             var okResult = result as OkObjectResult;
-            Assert.NotNull(okResult); 
+            Assert.NotNull(okResult);
             var response = Assert.IsAssignableFrom<BankAccount>(okResult.Value);
-            //Assert.Equal(bankAccount.BankAccountId, response.BankAccountId);
+            Assert.Equal(bankAccount.BankAccountId, response.BankAccountId);
             Assert.Equal(bankAccount.Name, response.Name);
             Assert.Equal(bankAccount.Balance, response.Balance);
 
 
         }
+
+        [Fact]
+        public async Task PutBankAccount_ReturnsNotFound()
+        {
+            // Arrange
+
+            var userId = "testuser";
+            var userClaims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, userId)
+        };
+            var userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(userClaims));
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = userPrincipal }
+            };
+
+            var bankAccountId = 1;
+            var bankAccountDTO = new BankAccountAddDTO
+            {
+                Name = "teste",
+                Balance = 300
+            };
+
+            var bankAccount = new BankAccount
+            {
+                BankAccountId = bankAccountId,
+                Name = "teste",
+                UserId = userId,
+                Balance = 5000
+            };
+
+            var bankAccountUpdated = new BankAccount
+            {
+                BankAccountId = bankAccountId,
+                Name = "teste",
+                UserId = userId,
+                Balance = 300
+            };
+
+            A.CallTo(() => _repository.GetBankAccountById(bankAccountId)).Returns(bankAccount);
+            A.CallTo(() => _repository.SaveChanges()).Returns(true);
+
+
+            // Act
+            var result = await _controller.PutBankAccount(bankAccountId, bankAccountDTO);
+
+            // Assert
+            var okResult = result as OkObjectResult;
+            Assert.NotNull(okResult);
+            var response = Assert.IsAssignableFrom<BankAccount>(okResult.Value);
+            //Assert.Equal(bankAccount.BankAccountId, response.BankAccountId);
+            Assert.Equal(bankAccount.Name, response.Name);
+            Assert.Equal(bankAccount.Balance, response.Balance);
+        }
+
+        [Fact]
+        public async Task DeleteBankAccount_ReturnsOkResult()
+        {
+            // Arrange
+
+            var userId = "testuser";
+            var userClaims = new List<Claim>
+    {
+        new Claim(ClaimTypes.NameIdentifier, userId)
+    };
+            var userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(userClaims));
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = userPrincipal }
+            };
+
+            var bankAccountId = 1;
+
+            // Simulate successful deletion
+
+            var bankaccount = new BankAccount
+            {
+                BankAccountId = bankAccountId,
+                UserId = userId,
+                Name = "Nubank",
+                Balance = 1500
+            };
+
+            A.CallTo(() => _repository.GetBankAccountById(bankAccountId)).Returns(bankaccount);
+            A.CallTo(() => _repository.SaveChanges()).Returns(true);
+
+            // Act
+            var result = await _controller.DeleteBankAccount(bankAccountId);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal("Bank Account deleted", okResult.Value);
+        }
+
+
     }
 }

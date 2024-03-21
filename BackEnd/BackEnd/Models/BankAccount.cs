@@ -7,10 +7,10 @@ namespace Organizer.Models
 {
     public class BankAccount
     {
-        public required int BankAccountId { get; set; }
+        public int BankAccountId { get; set; }
         [System.Text.Json.Serialization.JsonIgnore]
-        public required string? UserId { get; set; }
-        public required string? Name { get; set; }
+        public string? UserId { get; set; }
+        public string? Name { get; set; }
         public float? Balance { get; set; }
     }
 }
