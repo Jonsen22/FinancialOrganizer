@@ -86,7 +86,7 @@ namespace BackEndTest.Controllers
                 string? currentUserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
                 if (bankAccount.UserId != currentUserId)
-                    Unauthorized("Not authorized");
+                    return Unauthorized("Not authorized");
 
                 var bankAccountUpdate = _mapper.Map(bankAccountDTO, bankAccount);
                 _repository.Update(bankAccountUpdate);
@@ -115,7 +115,7 @@ namespace BackEndTest.Controllers
                 string? currentUserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
                 if (bankAccountDelete.UserId != currentUserId)
-                    Unauthorized("Not authorized");
+                    return Unauthorized("Not authorized");
 
                 _repository.Delete(bankAccountDelete);
 

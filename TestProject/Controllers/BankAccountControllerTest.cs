@@ -180,17 +180,15 @@ namespace TestProject.Controllers
 
 
         }
-
         [Fact]
-        public async Task PutBankAccount_ReturnsNotFound()
+        public async Task PutBankAccount_ReturnsNotFoundResult()
         {
             // Arrange
-
             var userId = "testuser";
             var userClaims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, userId)
-        };
+    {
+        new Claim(ClaimTypes.NameIdentifier, userId)
+    };
             var userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(userClaims));
             _controller.ControllerContext = new ControllerContext
             {
@@ -204,36 +202,14 @@ namespace TestProject.Controllers
                 Balance = 300
             };
 
-            var bankAccount = new BankAccount
-            {
-                BankAccountId = bankAccountId,
-                Name = "teste",
-                UserId = userId,
-                Balance = 5000
-            };
-
-            var bankAccountUpdated = new BankAccount
-            {
-                BankAccountId = bankAccountId,
-                Name = "teste",
-                UserId = userId,
-                Balance = 300
-            };
-
-            A.CallTo(() => _repository.GetBankAccountById(bankAccountId)).Returns(bankAccount);
-            A.CallTo(() => _repository.SaveChanges()).Returns(true);
-
+            A.CallTo(() => _repository.GetBankAccountById(bankAccountId)).Returns<BankAccount>(null);
 
             // Act
             var result = await _controller.PutBankAccount(bankAccountId, bankAccountDTO);
 
             // Assert
-            var okResult = result as OkObjectResult;
-            Assert.NotNull(okResult);
-            var response = Assert.IsAssignableFrom<BankAccount>(okResult.Value);
-            //Assert.Equal(bankAccount.BankAccountId, response.BankAccountId);
-            Assert.Equal(bankAccount.Name, response.Name);
-            Assert.Equal(bankAccount.Balance, response.Balance);
+            var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
+            Assert.Equal("Bank Account not found", notFoundResult.Value);
         }
 
         [Fact]
@@ -254,7 +230,6 @@ namespace TestProject.Controllers
 
             var bankAccountId = 1;
 
-            // Simulate successful deletion
 
             var bankaccount = new BankAccount
             {
@@ -273,6 +248,42 @@ namespace TestProject.Controllers
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Equal("Bank Account deleted", okResult.Value);
+        }
+
+        [Fact]
+        public async Task DeleteBankAccount_ReturnsNotFound()
+        {
+            // Arrange
+
+            var userId = "testuser";
+            var userClaims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.NameIdentifier, userId)
+                };
+            var userPrincipal = new ClaimsPrincipal(new ClaimsIdentity(userClaims));
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = userPrincipal }
+            };
+
+            var bankAccountId = 1;
+
+            var bankaccount = new BankAccount
+            {
+                BankAccountId = bankAccountId,
+                UserId = userId,
+                Name = "Nubank",
+                Balance = 1500
+            };
+
+            A.CallTo(() => _repository.GetBankAccountById(bankAccountId)).Returns<BankAccount>(null);
+
+            // Act
+            var result = await _controller.DeleteBankAccount(bankAccountId);
+
+            // Assert
+            var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
+            Assert.Equal("Bank Account not found", notFoundResult.Value);
         }
 
 

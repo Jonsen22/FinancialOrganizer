@@ -32,9 +32,9 @@ namespace BackEndTest.Controllers
 
                 string? currentUserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
                 var transactions = await _repository.GetTransactionsByUser(currentUserId);
-                var transactionsRetorno = _mapper.Map<IEnumerable<TransactionDTO>>(transactions);
+               
 
-                return transactionsRetorno.Any() ? Ok(transactionsRetorno) : BadRequest("No registers");
+                return transactions.Any() ? Ok(transactions) : NotFound("No registers");
             }
             catch (Exception e)
             {
@@ -54,9 +54,9 @@ namespace BackEndTest.Controllers
 
                 string? currentUserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
                 var transactions = await _repository.GetTransactionsByDate(InitialDate, FinalDate, currentUserId);
-                var transactionsRetorno = _mapper.Map<IEnumerable<TransactionDTO>>(transactions);
+               
 
-                return transactionsRetorno.Any() ? Ok(transactionsRetorno) : BadRequest("No registers");
+                return transactions.Any() ? Ok(transactions) : BadRequest("No registers");
             }
             catch (Exception e)
             {
@@ -71,7 +71,7 @@ namespace BackEndTest.Controllers
             try
             {
 
-                if (transactionDTO == null) return BadRequest("unregistered bank accounts");
+                if (transactionDTO == null) return BadRequest("object null");
 
                 string? currentUserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -80,9 +80,8 @@ namespace BackEndTest.Controllers
 
                 _repository.Add(transactionAdd);
 
-                var response = _mapper.Map<TransactionDTO>(transactionAdd);
 
-                return await _repository.SaveChanges() ? Ok(response) : BadRequest("Action not possible");
+                return await _repository.SaveChanges() ? Ok(transactionAdd) : BadRequest("Action not possible");
             }
             catch (Exception e)
             {
@@ -100,13 +99,15 @@ namespace BackEndTest.Controllers
 
                 string? currentUserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+                if (transaction == null) return NotFound("Transaction not found");
+
                 if (transaction.UserId != currentUserId)
-                    Unauthorized("Not authorized");
+                    return Unauthorized("Not authorized");
 
                 var transactionUpdate = _mapper.Map(transactionDTO, transaction);
                 _repository.Update(transactionUpdate);
-                var response = _mapper.Map<BankAccountDTO>(transactionUpdate);
-                return await _repository.SaveChanges() ? Ok(response) : BadRequest("Action not possible");
+         
+                return await _repository.SaveChanges() ? Ok(transactionUpdate) : BadRequest("Action not possible");
             }
             catch (Exception e)
             {
@@ -124,8 +125,10 @@ namespace BackEndTest.Controllers
                 var transactionDelete = await _repository.GetTransactionById(transactionId);
                 string? currentUserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+                if (transactionDelete == null) return NotFound("Transaction not found");
+
                 if (transactionDelete.UserId != currentUserId)
-                    Unauthorized("Not authorized");
+                   return Unauthorized("Not authorized");
 
                 _repository.Delete(transactionDelete);
 

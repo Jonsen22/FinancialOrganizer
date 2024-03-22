@@ -43,7 +43,7 @@ namespace BackEndTest.Controllers
         }
 
         [HttpGet("GetOnlyUserCategories")]
-        public async Task<ActionResult<IEnumerable<Category>>> GetUserCategories()
+        public async Task<ActionResult<IEnumerable<Category>>> GetCategoriesByUser()
         {
             try
             {
@@ -54,9 +54,9 @@ namespace BackEndTest.Controllers
                 Unauthorized("Not authorized");
 
             var categories = await _repository.GetOnlyUserCategories(currentUserId);
-            var categoriesReturn = _mapper.Map<IEnumerable<CategoryDTO>>(categories);
+            
 
-            return categoriesReturn.Any() ? Ok(categoriesReturn) : BadRequest("Error");
+            return categories.Any() ? Ok(categories) : NotFound("Error");
             }
             catch (Exception e)
             {
@@ -71,7 +71,7 @@ namespace BackEndTest.Controllers
             try
             {
 
-            if (categoryDTO == null) return BadRequest("No categories found");
+            if (categoryDTO == null) return BadRequest("Object null");
             string? currentUserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var categoryAdd = _mapper.Map<Category>(categoryDTO);
@@ -96,15 +96,18 @@ namespace BackEndTest.Controllers
             try
             {
                 var category = await _repository.GetCategoryById(categoryId);
+
+                if (category == null) return NotFound("Category not found");
+
                 string? currentUserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
                 if (category.UserId != currentUserId)
-                    Unauthorized("Not authorized");
+                    return Unauthorized("Not authorized");
 
                 var categoryUpdate = _mapper.Map(categoryDTO, category);
                 _repository.Update(categoryUpdate);
-                var response = _mapper.Map<CategoryDTO>(categoryUpdate);
-                return await _repository.SaveChanges() ? Ok(response) : BadRequest("Action not possible");
+
+                return await _repository.SaveChanges() ? Ok(categoryUpdate) : BadRequest("Action not possible");
             }
             catch (Exception e)
             {
@@ -128,7 +131,7 @@ namespace BackEndTest.Controllers
 
                 _repository.Delete(categoryDelete);
 
-                return await _repository.SaveChanges() ? Ok("Bank Account deleted") : BadRequest("Action not possible");
+                return await _repository.SaveChanges() ? Ok("Category deleted") : BadRequest("Action not possible");
             }
             catch (Exception e)
             {
