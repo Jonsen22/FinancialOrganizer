@@ -16,6 +16,8 @@ namespace BackEndTest.Controllers
     {
         private readonly ICategoryRepository _repository;
         private readonly IMapper _mapper;
+        const string errorMessage = "Error: {ErrorMessage}";
+        const string UnexpectedError = "Unexpected Error";
 
         public CategoryController(ICategoryRepository repository, IMapper mapper)
         {
@@ -29,16 +31,20 @@ namespace BackEndTest.Controllers
             try
             {
 
-            string? currentUserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var categories = await _repository.GetCategoriesByUser(currentUserId);
-            var categoriesReturn = _mapper.Map<IEnumerable<CategoryDTO>>(categories);
+                string? currentUserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            return categoriesReturn.Any() ? Ok(categoriesReturn) : BadRequest("Error");
+                if (currentUserId == null)
+                    return NotFound("User not Found");
+
+                var categories = await _repository.GetCategoriesByUser(currentUserId);
+                var categoriesReturn = _mapper.Map<IEnumerable<CategoryDTO>>(categories);
+
+                return categoriesReturn.Any() ? Ok(categoriesReturn) : BadRequest("Error");
             }
             catch (Exception e)
             {
-                Log.Error(e, "An error occurred: {ErrorMessage}", e.Message);
-                return (StatusCode(500, "Unexpected Error"));
+                Log.Error(e, errorMessage, e.Message);
+                return (StatusCode(500, UnexpectedError));
             }
         }
 
@@ -48,20 +54,23 @@ namespace BackEndTest.Controllers
             try
             {
 
-            string? currentUserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                string? currentUserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            if (currentUserId == null)
-                Unauthorized("Not authorized");
+                if (currentUserId == null)
+                    return NotFound("User not Found");
 
-            var categories = await _repository.GetOnlyUserCategories(currentUserId);
-            
 
-            return categories.Any() ? Ok(categories) : NotFound("Error");
+                var categories = await _repository.GetOnlyUserCategories(currentUserId);
+
+
+
+
+                return categories.Any() ? Ok(categories) : NotFound("Error");
             }
             catch (Exception e)
             {
-                Log.Error(e, "An error occurred: {ErrorMessage}", e.Message);
-                return (StatusCode(500, "Unexpected Error"));
+                Log.Error(e, errorMessage, e.Message);
+                return (StatusCode(500, UnexpectedError));
             }
         }
 
@@ -71,22 +80,22 @@ namespace BackEndTest.Controllers
             try
             {
 
-            if (categoryDTO == null) return BadRequest("Object null");
-            string? currentUserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (categoryDTO == null) return BadRequest("Object null");
+                string? currentUserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var categoryAdd = _mapper.Map<Category>(categoryDTO);
-            categoryAdd.UserId = currentUserId;
+                var categoryAdd = _mapper.Map<Category>(categoryDTO);
+                categoryAdd.UserId = currentUserId;
 
-            _repository.Add(categoryAdd);
+                _repository.Add(categoryAdd);
 
-            var response = _mapper.Map<CategoryDTO>(categoryAdd);
+                var response = _mapper.Map<CategoryDTO>(categoryAdd);
 
-            return await _repository.SaveChanges() ? Ok(response) : BadRequest("Action not possible");
+                return await _repository.SaveChanges() ? Ok(response) : BadRequest("Action not possible");
             }
             catch (Exception e)
             {
-                Log.Error(e, "An error occurred: {ErrorMessage}", e.Message);
-                return (StatusCode(500, "Unexpected Error"));
+                Log.Error(e, errorMessage, e.Message);
+                return (StatusCode(500, UnexpectedError));
             }
         }
 
@@ -111,8 +120,8 @@ namespace BackEndTest.Controllers
             }
             catch (Exception e)
             {
-                Log.Error(e, "An error occurred: {ErrorMessage}", e.Message);
-                return (StatusCode(500, "Unexpected Error"));
+                Log.Error(e, errorMessage, e.Message);
+                return (StatusCode(500, UnexpectedError));
             }
         }
 
@@ -135,8 +144,8 @@ namespace BackEndTest.Controllers
             }
             catch (Exception e)
             {
-                Log.Error(e, "An error occurred: {ErrorMessage}", e.Message);
-                return (StatusCode(500, "Unexpected Error"));
+                Log.Error(e, errorMessage, e.Message);
+                return (StatusCode(500, UnexpectedError));
             }
 
         }

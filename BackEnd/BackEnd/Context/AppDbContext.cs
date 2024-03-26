@@ -15,9 +15,9 @@ namespace Organizer.Context
         public DbSet<BankAccount> BankAccounts { get; set; }
 
 
-        protected override void OnModelCreating(ModelBuilder mb)
+        protected override void OnModelCreating(ModelBuilder builder)
         {
-            base.OnModelCreating(mb);
+            base.OnModelCreating(builder);
 
 
         }

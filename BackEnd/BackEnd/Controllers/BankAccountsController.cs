@@ -23,6 +23,8 @@ namespace BackEndTest.Controllers
     {
         private readonly IBankAccountRepository _repository;
         private readonly IMapper _mapper;
+        const string errorMessage = "Error: {ErrorMessage}";
+        const string UnexpectedError = "Unexpected Error";
 
         public BankAccountsController(IBankAccountRepository repository, IMapper mapper)
         {
@@ -38,15 +40,19 @@ namespace BackEndTest.Controllers
             {
 
             string? currentUserId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var bankAccounts = await _repository.GetBankAccountsByUser(currentUserId);
+
+                if (currentUserId == null)
+                    return NotFound("User not Found");
+
+                var bankAccounts = await _repository.GetBankAccountsByUser(currentUserId);
             var bankAccountsRetorno = _mapper.Map<IEnumerable<BankAccountDTO>>(bankAccounts);
 
             return bankAccountsRetorno.Any() ? Ok(bankAccounts) : NotFound("No registers");
             }
             catch (Exception e)
             {
-                Log.Error(e, "An error occurred: {ErrorMessage}", e.Message);
-                return (StatusCode(500, "Unexpected Error"));
+                Log.Error(e, errorMessage, e.Message);
+                return (StatusCode(500, UnexpectedError));
             }
         }
 
@@ -69,8 +75,8 @@ namespace BackEndTest.Controllers
             }
             catch (Exception e)
             {
-                Log.Error(e, "An error occurred: {ErrorMessage}", e.Message);
-                return (StatusCode(500, "Unexpected Error"));
+                Log.Error(e, errorMessage, e.Message);
+                return (StatusCode(500, UnexpectedError));
             }
         }
 
@@ -95,8 +101,8 @@ namespace BackEndTest.Controllers
             }
             catch (Exception e)
             {
-                Log.Error(e, "An error occurred: {ErrorMessage}", e.Message);
-                return (StatusCode(500, "Unexpected Error"));
+                Log.Error(e, errorMessage, e.Message);
+                return (StatusCode(500, UnexpectedError));
             }
 
 
@@ -123,8 +129,8 @@ namespace BackEndTest.Controllers
             }
             catch (Exception e)
             {
-                Log.Error(e, "An error occurred: {ErrorMessage}", e.Message);
-                return (StatusCode(500, "Unexpected Error"));
+                Log.Error(e, errorMessage, e.Message);
+                return (StatusCode(500, UnexpectedError));
             }
 
 
