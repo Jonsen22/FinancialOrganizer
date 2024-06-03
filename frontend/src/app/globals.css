@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.light {
+    --grape: 114, 35, 204;
+    --text: 255,255,255;
+    --background: 220, 220, 220;
+    --card: 240, 240, 240;
+    --border: 200, 200, 200;
+    --error: 255,51,51;
+}
+
+.dark{
+
+}

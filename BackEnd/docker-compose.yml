@@ -3,6 +3,7 @@ version: '3.4'
 
 networks:
   backend:
+  frontend:
 
 services:
     appdb:
@@ -24,7 +25,8 @@ services:
           context: .
           dockerfile: BackEnd/Dockerfile
         ports:
-          - 8001:80
+          - 8001:8081
+          - 8004:8080
         depends_on:
           - appdb
         environment:
@@ -33,6 +35,21 @@ services:
           - DB_SA_PASSWORD=password@12345#
         networks:
           - backend
+          - frontend
+
+    frontend:
+        container_name: frontendApp
+        build:
+          context: ../frontend
+          dockerfile: Dockerfile.dev
+        ports:
+          - "8003:3000"
+        volumes:
+          - ../frontend:/app
+          - /app/node_modules
+        networks:
+          - frontend
+        command: npm run dev
 
 
 

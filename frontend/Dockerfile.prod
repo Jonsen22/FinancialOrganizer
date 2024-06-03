@@ -1,0 +1,38 @@
+# Use uma imagem base oficial do Node.js
+FROM node:18-alpine AS builder
+
+# Define o diretório de trabalho
+WORKDIR /app
+
+# Copia o package.json e o package-lock.json
+COPY package*.json ./
+
+# Instala as dependências
+RUN npm install
+
+# Copia todo o código fonte para o diretório de trabalho
+COPY . .
+
+# Compila a aplicação Next.js
+RUN npm run build
+
+# Instala o servidor Next.js globalmente
+RUN npm install -g next
+
+# Usa uma imagem base mais leve para servir a aplicação
+FROM node:18-alpine
+
+# Define o diretório de trabalho
+WORKDIR /app
+
+# Copia os arquivos compilados do estágio anterior
+COPY --from=builder /app ./
+
+# Instala apenas as dependências de produção
+RUN npm install --only=production
+
+# Expõe a porta que a aplicação irá rodar
+EXPOSE 3000
+
+# Comando para rodar a aplicação
+CMD ["npm", "start"]
