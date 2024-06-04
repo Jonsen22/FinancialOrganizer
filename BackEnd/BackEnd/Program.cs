@@ -7,10 +7,36 @@ using Organizer.Context;
 using Serilog.Sinks.MSSqlServer;
 using Serilog;
 using Swashbuckle.AspNetCore.Filters;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("AllowAll", policy =>
+//    {
+//        policy.AllowAnyOrigin()
+//              .AllowAnyHeader()
+//              .AllowAnyMethod()
+//              .AllowCredentials();
+//    });
+//});
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin", policy =>
+    {
+        policy.WithOrigins("http://localhost:8003")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -26,26 +52,8 @@ builder.Services.AddSwaggerGen(options =>
     options.OperationFilter<SecurityRequirementsOperationFilter>();
 });
 
-//builder.Services.AddCors(options =>
-//{
-//    options.AddPolicy("AllowAll", policy =>
-//    {
-//        policy.AllowAnyOrigin()
-//              .AllowAnyHeader()
-//              .AllowAnyMethod();
-//    });
-//});
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("allowOrigin", policy =>
-    {
-        policy.WithOrigins("http://localhost:8003")
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
-    });
-});
+
 
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddScoped<IBaseRepository, BaseRepository>();
@@ -64,6 +72,10 @@ builder.Services.AddDbContext<AppDbContext>(options
 //builder.Services.AddDbContext<AppDbContext>(options
 //    => options.UseSqlServer(builder.Configuration.GetConnectionString("production")));
 
+builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
+
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .WriteTo.MSSqlServer(
@@ -75,16 +87,33 @@ Log.Logger = new LoggerConfiguration()
         })
     .CreateLogger();
 
+var config = builder.Configuration;
 
 
+builder.Services.AddAuthentication(x =>
+{
+    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer( x =>
+{
+    x.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidIssuer = config["JwtSetting:Issuer"],
+        ValidAudience = config["JwtSetting:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey
+            (Encoding.UTF8.GetBytes(config["JwtSetting:Key"]!)),
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true
+
+    };
+});
 
 
 builder.Services.AddAuthorization();
 
-
-builder.Services.AddIdentityApiEndpoints<IdentityUser>()
-    .AddEntityFrameworkStores<AppDbContext>()
-    .AddApiEndpoints();
 
 //builder.Services.AddAuthentication()
 //    .AddBearerToken(IdentityConstants.BearerScheme);
@@ -98,7 +127,7 @@ builder.Services.AddIdentityApiEndpoints<IdentityUser>()
 
 var app = builder.Build();
 
-app.UseCors("allowOrigin");
+app.UseCors("AllowSpecificOrigin");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -112,11 +141,6 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
 }
-
-app.MapGroup("api/auth")
-    .MapIdentityApi<IdentityUser>();
-
-
 
 app.UseHttpsRedirection();
 

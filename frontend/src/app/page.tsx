@@ -1,33 +1,38 @@
-"use client"
+"use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from 'next/navigation'; 
+import { useRouter } from "next/navigation";
 import { loginUser } from "../hooks/Userdata";
+import { useAuth } from '../contexts/authContext';
 import CookieConsent from "../components/cookie";
-
+import {parseCookies} from "nookies";
 
 const Home = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  const router = useRouter(); 
+  const [rememberMe, setRememberMe] = useState(false);
+  const { login } = useAuth();
 
-  const handleLoginSuccess = (response: {
-    data: { accessToken: any; refreshToken: any; expiresIn: any; tokenType: any };
-  }) => {
-    console.log(response)
-    const { accessToken, refreshToken, expiresIn, tokenType } = response.data;
-  
-    localStorage.setItem("accessToken", accessToken);
-    localStorage.setItem("refreshToken", refreshToken);
-    localStorage.setItem("expiresIn", expiresIn);
-    localStorage.setItem("tokenType", tokenType);
-  
-    router.push('/dashboard');
+  const router = useRouter();
+
+  const handleLoginSuccess = (response: { data: { token: any } }) => {
+    
+    var token = null;
+
+    if (!rememberMe) {
+      token = response.data.token;
+    } else {
+      const cookies = parseCookies();
+      token = cookies.loginCookie; 
+    }
+
+    localStorage.setItem("AccessToken", token);
+    console.log(token)
+    login(token);
+    router.push("/dashboard");
   };
-  
 
   useEffect(() => {
     const cookieConsent = document.cookie
@@ -51,11 +56,10 @@ const Home = () => {
         return;
       }
 
-      var response = await loginUser(email, password);
-      
-      if (response.title == "Unauthorized") setError("wrong email or password");
-      else handleLoginSuccess(response);;
+      var response = await loginUser(email, password, rememberMe);
 
+      if (response.title == "Unauthorized") setError("wrong email or password");
+      else handleLoginSuccess(response);
     } catch (error) {
       console.error("Error during user registration:", error);
     }
@@ -72,6 +76,10 @@ const Home = () => {
   const handleAgree = () => {
     setIsModalOpen(false);
   };
+
+  const handleRemeberMe = () => {
+    setRememberMe(!rememberMe);
+  }
 
   return (
     <div>
@@ -101,10 +109,16 @@ const Home = () => {
               className="rounded-md w-full p-2 border mb-2"
             />
             <div
-              className="flex justify-end w-full text-sm text-grape"
+              className="flex justify-between items-center w-full text-sm text-grape"
               style={{ marginTop: "0.5rem" }}
             >
-              <a className="cursor-pointer">Forgot your password?</a>
+              <div onClick={handleRemeberMe}>
+                <input type="checkbox" checked={rememberMe} onChange={handleRemeberMe} className="mr-1"/>
+                <span>Remember me.</span>
+              </div>
+              <div>
+                <a className="cursor-pointer">Forgot your password?</a>
+              </div>
             </div>
           </div>
 
