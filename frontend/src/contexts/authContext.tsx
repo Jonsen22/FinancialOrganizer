@@ -6,13 +6,16 @@ import { parseCookies, setCookie, destroyCookie } from 'nookies';
 
 const AuthContext = createContext({
   user: null,
+  loading: true,
   login: (token) => {},
   logout: () => {},
   refreshAccessToken: () => {},
+  email: null,
 });
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true); // Add loading state
   const router = useRouter();
 
   useEffect(() => {
@@ -25,12 +28,13 @@ export const AuthProvider = ({ children }) => {
         logout();
       }
     }
+    setLoading(false); // Set loading to false after checking authentication
   }, []); 
 
   const login = (accessToken) => {
-  
     const decodedToken = decodeAccessToken(accessToken);
     setUser(decodedToken);
+    setLoading(false);
   };
 
   const logout = () => {
@@ -38,6 +42,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("AccessToken");
     setUser(null);
     router.push('/');
+    setLoading(false);
   };
 
   const decodeAccessToken = (accessToken) => {
@@ -67,8 +72,11 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const emailClaim = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress';
+  const email = user ? user[emailClaim] : '';
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, refreshAccessToken }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, refreshAccessToken, email }}>
       {children}
     </AuthContext.Provider>
   );
