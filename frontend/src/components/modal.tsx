@@ -136,7 +136,6 @@ const Modal = ({
         transaction
       );
 
-      console.log(response)
     } else {
       const response = await postTransaction(
         localStorage.getItem("AccessToken"),
