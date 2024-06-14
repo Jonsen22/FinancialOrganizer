@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import FeedCard from "./feedCard";
 import Modal from "./modal";
 
-const Feed = ({ transactions = [], setMonth, updateTransaction }) => {
+const Feed = ({ transactions = [], setMonth, updateTransaction, deleteTransaction  }) => {
   interface Transaction {
     bankAccount: {
       bankAccountId: number;
@@ -29,9 +29,23 @@ const Feed = ({ transactions = [], setMonth, updateTransaction }) => {
     value: number;
   }
 
+  interface TransactionEdit {
+    transactionId: number,
+    bankAccountId: number;
+    categoryId: number;
+    name: string;
+    value: number;
+    date: string; 
+    description: string;
+    recurring: string;
+    type: string;
+  }
+
   if (!Array.isArray(transactions)) {
     transactions = [];
   }
+
+  // console.log(transactions)
 
   const year = new Date().getFullYear();
   const presentMonth = new Date().getMonth() + 1;
@@ -39,6 +53,8 @@ const Feed = ({ transactions = [], setMonth, updateTransaction }) => {
 
   const [month, setMonthState] = useState(presentMonth);
   const [modal, setModal] = useState(false);
+  const [update, setUpdate] = useState(false);
+  const [transactionEdit, setTransactionEdit] = useState<TransactionEdit>();
 
   const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newMonth = parseInt(event.target.value);
@@ -48,7 +64,16 @@ const Feed = ({ transactions = [], setMonth, updateTransaction }) => {
 
   const handleModal = () => {
     setModal(!modal);
+    setUpdate(false);
   };
+
+  const handleEditModal = (transaction: TransactionEdit) => {
+    setModal(!modal);
+    setUpdate(true);
+    setTransactionEdit(transaction);
+  }
+
+
 
   const groupedTransactions = Array.isArray(transactions)
     ? transactions.reduce((groups, transaction) => {
@@ -116,7 +141,7 @@ const Feed = ({ transactions = [], setMonth, updateTransaction }) => {
             <span>Outcome</span>
           </div>
           <div className="flex w-full justify-end items-center">
-            <button className="bg-green-500 h-8 w-8 flex items-center justify-center rounded-full hover:bg-green-700">
+            <button onClick={handleModal} className="bg-green-500 h-8 w-8 flex items-center justify-center rounded-full hover:bg-green-700">
               +
             </button>
           </div>
@@ -132,7 +157,7 @@ const Feed = ({ transactions = [], setMonth, updateTransaction }) => {
               <div className="text-center p-2">{date}</div>
               {(transactions as Transaction[]).map(
                 (transaction, innerIndex) => (
-                  <FeedCard key={innerIndex} transaction={transaction} />
+                  <FeedCard key={innerIndex} transaction={transaction} deleteTransaction={deleteTransaction} handleEditModal={handleEditModal} />
                 )
               )}
             </React.Fragment>
@@ -143,6 +168,8 @@ const Feed = ({ transactions = [], setMonth, updateTransaction }) => {
         modalVisible={modal}
         handleModal={handleModal}
         updateTransaction={updateTransaction}
+        update={update}
+        transactionEdit={transactionEdit}
       />
     </div>
   );

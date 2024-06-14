@@ -1,20 +1,31 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { getBankAccounts, getCategories, postTransaction } from "../hooks/Transactionsdata";
+import {
+  getBankAccounts,
+  getCategories,
+  postTransaction,
+  putTransaction,
+} from "../hooks/Transactionsdata";
 
 interface Transaction {
   bankAccountId: number;
   categoryId: number;
   name: string;
   value: number;
-  date: string; 
+  date: string;
   description: string;
   recurring: string;
   type: string;
 }
 
-const Modal = ({ modalVisible, handleModal, updateTransaction }) => {
+const Modal = ({
+  modalVisible,
+  handleModal,
+  updateTransaction,
+  update,
+  transactionEdit,
+}) => {
   const [isVisible, setIsVisible] = useState(false);
   const [bankAccounts, setBankAccounts] = useState(null);
   const [categories, setCategories] = useState(null);
@@ -26,12 +37,37 @@ const Modal = ({ modalVisible, handleModal, updateTransaction }) => {
   const [type, setType] = useState("");
   const [bankAccountId, setBankAccountId] = useState<number>();
   const [categoryId, setCategoryId] = useState<number>();
+  const [editTransation, setEditTransation] = useState<Transaction>();
 
   useEffect(() => {
     setIsVisible(modalVisible);
+    if (update) fetchEditTransaction(transactionEdit);
   }, [modalVisible]);
 
+  const fetchEditTransaction = (transaction: Transaction) => {
+    setName(transaction.name);
+    setValue(transaction.value);
+    setDate(transaction.date);
+    setDescription(transaction.description);
+    setRecurring(transaction.recurring);
+    setType(transaction.type);
+    setBankAccountId(transaction.bankAccountId);
+    setCategoryId(transaction.categoryId);
+  };
+
+  useEffect(() => {
+    if (value < 0) setValue(value * -1);
+  }, [value]);
+
   const handleCloseModal = () => {
+    setName("");
+    setValue(null);
+    setDate("");
+    setDescription("");
+    setRecurring("");
+    setType("");
+    setBankAccountId(null);
+    setCategoryId(null);
     setIsVisible(false);
     handleModal();
   };
@@ -51,7 +87,6 @@ const Modal = ({ modalVisible, handleModal, updateTransaction }) => {
       }
     }
   }, [categories]);
-
 
   const fetchBankAccounts = async () => {
     if (localStorage.getItem("AccessToken")) {
@@ -79,12 +114,11 @@ const Modal = ({ modalVisible, handleModal, updateTransaction }) => {
     return null;
   }
 
-  const handleSubmit = async() => {
+  const handleSubmit = async () => {
     var updatedValue = value;
-    if(type == "Expense")
-      updatedValue = value*-1
+    if (type == "Expense") updatedValue = value * -1;
 
-    const transaction:Transaction = {
+    const transaction: Transaction = {
       bankAccountId: bankAccountId,
       categoryId: categoryId,
       name: name,
@@ -92,14 +126,27 @@ const Modal = ({ modalVisible, handleModal, updateTransaction }) => {
       date: date,
       description: description,
       recurring: recurring,
-      type: type
+      type: type,
+    };
+
+    if (update) {
+      const response = await putTransaction(
+        localStorage.getItem("AccessToken"),
+        transactionEdit.transactionId,
+        transaction
+      );
+
+      console.log(response)
+    } else {
+      const response = await postTransaction(
+        localStorage.getItem("AccessToken"),
+        transaction
+      );
     }
 
-    const response = await postTransaction(localStorage.getItem("AccessToken"), transaction)
-    console.log(response);
+    // console.log(response);
     updateTransaction();
-  }
-
+  };
 
   const handleNameChange = (event: React.SetStateAction<string>) => {
     setName(event);
@@ -129,15 +176,19 @@ const Modal = ({ modalVisible, handleModal, updateTransaction }) => {
     setType(type);
   };
 
-  const handleBankAccountChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleBankAccountChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
     const bankAccount = parseInt(event.target.value);
 
     setBankAccountId(bankAccount);
   };
 
-  const handleCategoryChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleCategoryChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
     const category = parseInt(event.target.value);
-    console.log(category)
+    // console.log(category)
     setCategoryId(category);
   };
 
@@ -149,37 +200,61 @@ const Modal = ({ modalVisible, handleModal, updateTransaction }) => {
             <button onClick={handleCloseModal}>Close</button>
           </div>
           <div className="flex flex-col justify-center items-start w-full space-y-2">
-            <label >Name:</label>
-            <input className="rounded p-1" onChange={(e) => handleNameChange(e.target.value)}></input>
+            <label>Name:</label>
+            <input
+              className="rounded p-1"
+              onChange={(e) => handleNameChange(e.target.value)}
+              value={name}
+            ></input>
             <label>Value:</label>
             <input
-                className="rounded p-1"
+              className="rounded p-1"
               type="number"
               onChange={(e) => handleValueChange(parseInt(e.target.value))}
+              value={value}
             ></input>
             <label>Date:</label>
             <input
-            className="rounded p-1"
+              className="rounded p-1"
               onChange={(e) => handleValueDate(e.target.value)}
+              value={date}
               type="datetime-local"
             ></input>
-            <label >Description:</label>
-            <input className="rounded p-1" onChange={(e) => handleDescriptionChange(e.target.value)}></input>
+            <label>Description:</label>
+            <input
+              className="rounded p-1"
+              onChange={(e) => handleDescriptionChange(e.target.value)}
+              value={description}
+            ></input>
             <label>Recurring:</label>
-            <select onChange={handleRecurringChange} className="rounded p-1">
+            <select
+              value={recurring}
+              onChange={handleRecurringChange}
+              className="rounded p-1"
+            >
               <option value={"Y"}>Yes</option>
               <option value={"N"}>No</option>
             </select>
             <label>Type:</label>
-            <select onChange={handleTypeChange} className="rounded p-1">
+            <select
+              value={type}
+              onChange={handleTypeChange}
+              className="rounded p-1"
+            >
               <option value={"Income"}>Income</option>
               <option value={"Expense"}>Expense</option>
             </select>
             <div className="flex w-full flex-row items-center justify-between">
               <label>Bank Account:</label>
-              <button className="rounded-full p-[4px] bg-grape text-text">Edit Bank Account</button>
+              <button className="rounded-full p-[4px] bg-grape text-text">
+                Edit Bank Account
+              </button>
             </div>
-            <select onChange={handleBankAccountChange} className="rounded p-1">
+            <select
+              value={bankAccountId}
+              onChange={handleBankAccountChange}
+              className="rounded p-1"
+            >
               {bankAccounts.map((bankAccount, index) => (
                 <option key={index} value={bankAccount.bankAccountId}>
                   {bankAccount.name}
@@ -188,17 +263,39 @@ const Modal = ({ modalVisible, handleModal, updateTransaction }) => {
             </select>
             <div className="flex w-full flex-row items-center justify-between">
               <label>Category:</label>
-              <button className="rounded-full p-[4px] bg-grape text-text">Edit category</button>
+              <button className="rounded-full p-[4px] bg-grape text-text">
+                Edit category
+              </button>
             </div>
-            <select onChange={handleCategoryChange} className="rounded p-1">
+            <select
+              value={categoryId}
+              onChange={handleCategoryChange}
+              className="rounded p-1"
+            >
               {categories.map((category, index) => (
-                <option key={index} value={parseInt(category.categoryId)}>{category.name}</option>
+                <option key={index} value={parseInt(category.categoryId)}>
+                  {category.name}
+                </option>
               ))}
             </select>
           </div>
         </div>
         <div className="flex items-center justify-center">
-              <button onClick={handleSubmit} className="rounded-full p-[5px] bg-grape text-text">Submit</button>
+          {update ? (
+            <button
+              onClick={handleSubmit}
+              className="rounded-full p-[5px] bg-grape text-text"
+            >
+              Update
+            </button>
+          ) : (
+            <button
+              onClick={handleSubmit}
+              className="rounded-full p-[5px] bg-grape text-text"
+            >
+              Submit
+            </button>
+          )}
         </div>
       </div>
     </div>

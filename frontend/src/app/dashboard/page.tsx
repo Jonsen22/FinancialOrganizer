@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../contexts/authContext";
 import Feed from "../../components/financialFeed";
-import { getTransactions } from "../../hooks/Transactionsdata";
+import { getTransactions, deleteTransaction } from "../../hooks/Transactionsdata";
 import Navbar from "../../components/navbar";
 import Graphs from "../../components/graphs";
 
@@ -83,6 +83,19 @@ const Dashboard = () => {
     }
   }, [month, transactions]);
 
+  const deleteTransactions = async(transactionId: number) => {
+    const response = await deleteTransaction(localStorage.getItem("AccessToken"), transactionId);
+    // console.log(response)
+    if(response.status = 200){
+      // fetchTransactions();
+
+
+       setTransactions((prevTransactions) =>
+        prevTransactions.filter(transaction => transaction.transactionId !== transactionId)
+      );
+    }
+  };
+
   const getExpensiveIncome = (): Balance[] => {
     const data: { [key: string]: Balance } = {};
 
@@ -103,7 +116,7 @@ const Dashboard = () => {
       }
     });
 
-    console.log("Income and expense data per bank account:", data);
+    // console.log("Income and expense data per bank account:", data);
     return Object.values(data); // Convert the object to an array of values
   };
 
@@ -120,7 +133,7 @@ const Dashboard = () => {
       <Navbar />
       <div className="flex flex-col gap-2 md:flex-row h-full min-h-96 m-5 md:m-2">
         <div className="flex-grow md:w-3/5 h-full">
-          <Feed transactions={transactions} setMonth={setMonth} updateTransaction={fetchTransactions} />
+          <Feed transactions={transactions} setMonth={setMonth} updateTransaction={fetchTransactions} deleteTransaction={deleteTransactions} />
         </div>
         <div className="overflow-hidden w-full h-[100vh] md:h-full md:w-2/5 flex-grow mt-5 md:mt-2">
           <Graphs data={total} transactions={transactions} />

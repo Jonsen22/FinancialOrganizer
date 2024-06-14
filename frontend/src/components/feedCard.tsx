@@ -1,4 +1,4 @@
-const feedCard = ({ transaction }) => {
+const feedCard = ({ transaction, deleteTransaction, handleEditModal: putTransaction }) => {
     const color = transaction.category.colorhex;
 
     var value = transaction.value;
@@ -12,6 +12,25 @@ const feedCard = ({ transaction }) => {
       const minutes = date.getMinutes();
       return `${hours}:${minutes < 10 ? '0' : ''}${minutes}`;
     };
+
+    const handleDelete = () => {
+      deleteTransaction(transaction.transactionId)
+    }
+
+    const handleUpdate = () => {
+      const transactionUpdate = {
+        transactionId: transaction.transactionId,
+        bankAccountId: transaction.bankAccountId,
+        categoryId: transaction.categoryId,
+        name: transaction.name,
+        value: transaction.value,
+        date: transaction.date,
+        description: transaction.description,
+        recurring: transaction.recurring,
+        type: transaction.type,
+      }
+      putTransaction(transactionUpdate)
+    }
   
     return (
       <div className="flex items-center p-2">
@@ -23,6 +42,18 @@ const feedCard = ({ transaction }) => {
           </div>
         </div>
         <div className="text-base">US$ {value}</div>
+        <button
+          className="bg-red-500 ml-2 text-white h-6 w-6 flex items-center justify-center rounded-full hover:bg-red-700"
+          onClick={handleDelete}
+        >
+          &times;
+        </button>
+        <button
+          className="bg-yellow-500 ml-2 text-white h-6 w-6 flex items-center justify-center rounded-full hover:bg-yellow-700"
+          onClick={handleUpdate}
+        >
+          E
+        </button>
       </div>
     );
   };

@@ -13,6 +13,18 @@ interface Transaction {
   type: string;
 }
 
+interface editTransaction {
+  transactionId: number;
+  bankAccountId: number;
+  categoryId: number;
+  name: string;
+  value: number;
+  date: string; 
+  description: string;
+  recurring: string;
+  type: string;
+}
+
 export async function getTransactions(_token) {
     let url = API_URL +'/api/Transaction/GetTransactionsByUser';
   
@@ -45,6 +57,40 @@ export async function postTransaction(_token, transaction: Transaction ){
   } catch(error) {
     return(error.response ? error.response.data : error.message);
   }
+}
+
+export async function putTransaction(_token, transactionId: number, transaction: editTransaction ){
+  let url = API_URL +'/api/Transaction?transactionId='+transactionId
+
+  try{
+
+    const response = await axios.put(url, transaction, {
+      headers: {
+        'Content-Type': 'application/json',
+       'Authorization' : 'bearer ' + _token
+     }
+   });
+ return response
+ } catch(error) {
+   return(error.response ? error.response.data : error.message);
+ }
+}
+
+export async function deleteTransaction(_token, transactionId: number ){
+  let url = API_URL +'/api/Transaction?transactionId='+transactionId
+
+  try{
+
+    const response = await axios.delete(url, {
+      headers: {
+        'Content-Type': 'application/json',
+       'Authorization' : 'bearer ' + _token
+     }
+   });
+ return response
+ } catch(error) {
+   return(error.response ? error.response.data : error.message);
+ }
 }
 
 export async function getBankAccounts(_token) {

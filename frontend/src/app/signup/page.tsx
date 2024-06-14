@@ -43,7 +43,7 @@ const SignUp = () => {
       }
 
       var response = await registerUser(email, password);
-      console.log(response);
+      // console.log(response);
       if(response.status == 200){
         var loginResponse = await loginUser(email, password);
         if(loginResponse.status == 200)

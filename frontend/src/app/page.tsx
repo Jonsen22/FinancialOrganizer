@@ -33,7 +33,7 @@ const Home = () => {
     token = response.data.token;
 
     localStorage.setItem("AccessToken", token);
-    console.log(token)
+    // console.log(token)
     login(token);
     router.push("/dashboard");
   };
@@ -61,7 +61,7 @@ const Home = () => {
       }
 
       var response = await loginUser(email, password, rememberMe);
-      console.log(response)
+      // console.log(response)
 
       if (response.title == "Unauthorized") setError("wrong email or password");
       else handleLoginSuccess(response);
