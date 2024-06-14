@@ -10,7 +10,7 @@
 *.userosscache
 *.sln.docstates
 
-**/coveragereport
+TestProject/coveragereport/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
