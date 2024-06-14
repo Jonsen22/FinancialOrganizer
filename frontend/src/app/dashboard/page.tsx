@@ -120,7 +120,7 @@ const Dashboard = () => {
       <Navbar />
       <div className="flex flex-col gap-2 md:flex-row h-full min-h-96 m-5 md:m-2">
         <div className="flex-grow md:w-3/5 h-full">
-          <Feed transactions={transactions} setMonth={setMonth} />
+          <Feed transactions={transactions} setMonth={setMonth} updateTransaction={fetchTransactions} />
         </div>
         <div className="overflow-hidden w-full h-[100vh] md:h-full md:w-2/5 flex-grow mt-5 md:mt-2">
           <Graphs data={total} transactions={transactions} />

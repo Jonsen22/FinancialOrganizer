@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import FeedCard from "./feedCard";
+import Modal from "./modal";
 
-const Feed = ({ transactions, setMonth }) => {
-
+const Feed = ({ transactions = [], setMonth, updateTransaction }) => {
   interface Transaction {
     bankAccount: {
       bankAccountId: number;
@@ -29,29 +29,40 @@ const Feed = ({ transactions, setMonth }) => {
     value: number;
   }
 
+  if (!Array.isArray(transactions)) {
+    transactions = [];
+  }
+
   const year = new Date().getFullYear();
   const presentMonth = new Date().getMonth() + 1;
   const years = Array.from(new Array(20), (val, index) => year - index);
 
   const [month, setMonthState] = useState(presentMonth);
+  const [modal, setModal] = useState(false);
 
   const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newMonth = parseInt(event.target.value);
     setMonthState(newMonth);
-    setMonth(newMonth); // Update month in Dashboard component
+    setMonth(newMonth);
   };
 
-  const groupedTransactions = transactions.reduce((groups, transaction) => {
-    const transactionMonth = new Date(transaction.date).getMonth() + 1;
-    if (transactionMonth === month) {
-      const date = new Date(transaction.date).toLocaleDateString();
-      if (!groups[date]) {
-        groups[date] = [];
-      }
-      groups[date].push(transaction);
-    }
-    return groups;
-  }, {});
+  const handleModal = () => {
+    setModal(!modal);
+  };
+
+  const groupedTransactions = Array.isArray(transactions)
+    ? transactions.reduce((groups, transaction) => {
+        const transactionMonth = new Date(transaction.date).getMonth() + 1;
+        if (transactionMonth === month) {
+          const date = new Date(transaction.date).toLocaleDateString();
+          if (!groups[date]) {
+            groups[date] = [];
+          }
+          groups[date].push(transaction);
+        }
+        return groups;
+      }, {})
+    : {};
 
   const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
     const feedContainer = event.currentTarget;
@@ -76,7 +87,7 @@ const Feed = ({ transactions, setMonth }) => {
   return (
     <div className="w-full h-[90vh] md:h-full flex flex-col items-center justify-center">
       <div className="flex items-center justify-between w-full md:mb-2">
-        <div className="flex flex-row items-center justify-between md:justify-center w-full h-10 md:gap-2">
+        <div className="flex flex-row items-center pl-2 justify-evenly md:justify-center w-full h-10 md:gap-2">
           <select id="month" value={month} onChange={handleChange}>
             <option value="1">January</option>
             <option value="2">February</option>
@@ -104,10 +115,10 @@ const Feed = ({ transactions, setMonth }) => {
             <input type="checkbox" />
             <span>Outcome</span>
           </div>
-        </div>
-        <div className="flex flex-row gap-4 mr-3">
-          <div className="rounded-full h-6 w-6 bg-green-500 border-[1px] text-lg border-black flex items-center justify-center">
-            +
+          <div className="flex w-full justify-end items-center">
+            <button className="bg-green-500 h-8 w-8 flex items-center justify-center rounded-full hover:bg-green-700">
+              +
+            </button>
           </div>
         </div>
       </div>
@@ -115,15 +126,24 @@ const Feed = ({ transactions, setMonth }) => {
         id="feed-container"
         className="w-full h-full border-2 border-border overflow-y-auto rounded-lg md:mb-20"
       >
-        {Object.entries(groupedTransactions).map(([date, transactions], index) => (
-          <React.Fragment key={index}>
-            <div className="text-center p-2">{date}</div>
-            {(transactions as Transaction[]).map((transaction, innerIndex) => (
-              <FeedCard key={innerIndex} transaction={transaction} />
-            ))}
-          </React.Fragment>
-        ))}
+        {Object.entries(groupedTransactions).map(
+          ([date, transactions], index) => (
+            <React.Fragment key={index}>
+              <div className="text-center p-2">{date}</div>
+              {(transactions as Transaction[]).map(
+                (transaction, innerIndex) => (
+                  <FeedCard key={innerIndex} transaction={transaction} />
+                )
+              )}
+            </React.Fragment>
+          )
+        )}
       </div>
+      <Modal
+        modalVisible={modal}
+        handleModal={handleModal}
+        updateTransaction={updateTransaction}
+      />
     </div>
   );
 };

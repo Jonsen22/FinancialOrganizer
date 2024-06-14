@@ -45,7 +45,7 @@ namespace BackEnd.Controllers
                     {
                         var cookieOptions = new CookieOptions
                         {
-                            HttpOnly = false,
+                            HttpOnly = true,
                             Secure = true,
                             SameSite = SameSiteMode.None,
                             Expires = now.AddHours(2),
@@ -87,7 +87,12 @@ namespace BackEnd.Controllers
             try
             {
                 var tokenHandler = new JwtSecurityTokenHandler();
-                var key = Encoding.ASCII.GetBytes(_configuration["JwtSetting:Key"]);
+                var jwtKey = Environment.GetEnvironmentVariable("JWTKey");
+
+                if (string.IsNullOrEmpty(jwtKey))
+                    throw new InvalidOperationException("JWTKey environment variable is not set.");
+
+                var key = Encoding.ASCII.GetBytes(jwtKey);
 
                 tokenHandler.ValidateToken(refreshToken, new TokenValidationParameters
                 {
@@ -98,14 +103,14 @@ namespace BackEnd.Controllers
                     ValidateLifetime = false
                 }, out SecurityToken validatedToken);
 
-                var user = GetUserFromToken(refreshToken); 
+                var user = GetUserFromToken(refreshToken);
                 var newToken = GenerateJwtToken(user);
 
                 DateTime now = DateTime.Now;
 
                 var cookieOptions = new CookieOptions
                 {
-                    HttpOnly = false,
+                    HttpOnly = true,
                     Secure = true,
                     SameSite = SameSiteMode.None,
                     Expires = now.AddHours(2)
@@ -124,22 +129,33 @@ namespace BackEnd.Controllers
         {
             var claims = new[]
             {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(ClaimTypes.Email, user.Email)
-        };
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSetting:Key"]));
+        new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        new Claim(ClaimTypes.Email, user.Email)
+    };
+
+            var jwtKey = Environment.GetEnvironmentVariable("JWTKey");
+            var issuer = Environment.GetEnvironmentVariable("JWTIssuer");
+            var audience = Environment.GetEnvironmentVariable("JWTAudience");
+
+            if (string.IsNullOrEmpty(jwtKey) || string.IsNullOrEmpty(issuer) || string.IsNullOrEmpty(audience))
+            {
+                throw new InvalidOperationException("JWT environment variables are not set.");
+            }
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: _configuration["JwtSetting:Issuer"],
-                audience: _configuration["JwtSetting:Audience"],
+                issuer: issuer,
+                audience: audience,
                 claims: claims,
                 expires: DateTime.Now.AddMinutes(30),
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
 
         private IdentityUser GetUserFromToken(string token)
         {

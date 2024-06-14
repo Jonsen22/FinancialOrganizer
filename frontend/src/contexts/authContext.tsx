@@ -15,7 +15,7 @@ const AuthContext = createContext({
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [loading, setLoading] = useState(true); 
   const router = useRouter();
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
         logout();
       }
     }
-    setLoading(false); // Set loading to false after checking authentication
+    setLoading(false); 
   }, []); 
 
   const login = (accessToken) => {

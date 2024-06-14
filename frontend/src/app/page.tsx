@@ -21,12 +21,16 @@ const Home = () => {
     
     var token = null;
 
-    if (!rememberMe) {
-      token = response.data.token;
-    } else {
-      const cookies = parseCookies();
-      token = cookies.loginCookie; 
-    }
+    // if (!rememberMe) {
+    //   token = response.data.token;
+    // } else {
+    //   const cookies = parseCookies();
+    //   console.log(cookies)
+    //   token = cookies.loginCookie; 
+    //   console.log(token)
+    // }
+
+    token = response.data.token;
 
     localStorage.setItem("AccessToken", token);
     console.log(token)
@@ -57,6 +61,7 @@ const Home = () => {
       }
 
       var response = await loginUser(email, password, rememberMe);
+      console.log(response)
 
       if (response.title == "Unauthorized") setError("wrong email or password");
       else handleLoginSuccess(response);

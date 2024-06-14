@@ -89,6 +89,16 @@ Log.Logger = new LoggerConfiguration()
 
 var config = builder.Configuration;
 
+var jwtIssuer = Environment.GetEnvironmentVariable("JWTIssuer");
+var jwtAudience = Environment.GetEnvironmentVariable("JWTAudience");
+var jwtKey = Environment.GetEnvironmentVariable("JWTKey");
+
+if (string.IsNullOrEmpty(jwtIssuer) || string.IsNullOrEmpty(jwtAudience) || string.IsNullOrEmpty(jwtKey))
+{
+    throw new InvalidOperationException("JWT environment variables are not set.");
+}
+
+var key = Encoding.UTF8.GetBytes(jwtKey);
 
 builder.Services.AddAuthentication(x =>
 {
@@ -99,10 +109,9 @@ builder.Services.AddAuthentication(x =>
 {
     x.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidIssuer = config["JwtSetting:Issuer"],
-        ValidAudience = config["JwtSetting:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey
-            (Encoding.UTF8.GetBytes(config["JwtSetting:Key"]!)),
+        ValidIssuer = jwtIssuer,
+        ValidAudience = jwtAudience,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,

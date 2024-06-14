@@ -33,6 +33,9 @@ services:
           - DB_HOST=appdb
           - DB_NAME=backendOrganizer
           - DB_SA_PASSWORD=password@12345#
+          - JWTKey=NovaSenhaDoJWTGuardadaEmUmLugarTotalmenteSeguro
+          - JWTIssuer=https://localhost:8081
+          - JWTAudience=https://localhost:8003
         networks:
           - backend
           - frontend

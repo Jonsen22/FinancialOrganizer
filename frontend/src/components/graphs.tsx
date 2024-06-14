@@ -65,7 +65,7 @@ type OptionType = {
   expense: number;
 };
 
-// Custom Option component with a checkbox
+
 const CustomOption = (props) => {
   return (
     <components.Option {...props}>
@@ -80,7 +80,7 @@ const CustomMultiValue = (props) => {
   return null;
 };
 
-const Graphs: React.FC<GraphsProps> = ({ data, transactions }) => {
+const Graphs: React.FC<GraphsProps> = ({ data, transactions=[] }) => {
   const [options, setOptions] = useState<OptionType[]>([]);
   const [selectedOptions, setSelectedOptions] = useState<OptionType[]>([]);
   const [categoryExpenses, setCategoryExpenses] = useState<CategoryExpense[]>(
@@ -96,6 +96,10 @@ const Graphs: React.FC<GraphsProps> = ({ data, transactions }) => {
     }));
     setOptions(tempOptions);
   };
+
+  if (!Array.isArray(transactions)) {
+    transactions = [];
+  }
 
   const calculateCategoryExpenses = (transactions: Transaction[]) => {
     const expenses = transactions.reduce((acc, transaction) => {
@@ -118,7 +122,7 @@ const Graphs: React.FC<GraphsProps> = ({ data, transactions }) => {
     setCategoryExpenses(result);
   };
 
-  console.log(categoryExpenses);
+
 
   useEffect(() => {
     dataToSelectOptions(data);
@@ -134,6 +138,7 @@ const Graphs: React.FC<GraphsProps> = ({ data, transactions }) => {
 
   return (
     <div className=" w-full h-full md:h-full flex flex-col items-center justify-start">
+      <div className="w-full h-[50%] bg-white p-4 rounded">
       <Select
         options={options}
         value={selectedOptions}
@@ -145,7 +150,6 @@ const Graphs: React.FC<GraphsProps> = ({ data, transactions }) => {
         placeholder="Please select options"
         className="w-full"
       />
-      <div className="w-full h-[50%]">
         <div className="h-full w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
@@ -172,7 +176,7 @@ const Graphs: React.FC<GraphsProps> = ({ data, transactions }) => {
         </div>
       </div>
 
-      <div className="w-full h-[50%]">
+      <div className="w-full h-[50%] bg-white p-4 rounded">
         <div className="text-center">Expenses by Category</div>
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>

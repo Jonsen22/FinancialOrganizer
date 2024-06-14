@@ -27,7 +27,7 @@
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx"
-, "src/app/layout.jsx", "src/app/page.tsx", "src/app/signup/page.jsx"  ],
+, "src/app/layout.jsx", "src/app/page.tsx", "src/app/signup/page.jsx", "src/components/financialFeed.jsx"  ],
   "exclude": [
     "node_modules"
   ]
