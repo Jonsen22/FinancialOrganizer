@@ -117,8 +117,12 @@ const Home = () => {
               className="flex justify-between items-center w-full text-sm text-grape"
               style={{ marginTop: "0.5rem" }}
             >
-              <div onClick={handleRemeberMe}>
-                <input type="checkbox" checked={rememberMe} onChange={handleRemeberMe} className="mr-1"/>
+              <div onClick={handleRemeberMe} tabIndex={0} onKeyDown={(e) => {
+                if(e.key === 'Enter') {
+                  handleRemeberMe()
+                }
+              }}>
+                <input type="checkbox" checked={rememberMe}  onChange={handleRemeberMe} className="mr-1"/>
                 <span>Remember me.</span>
               </div>
               <div>

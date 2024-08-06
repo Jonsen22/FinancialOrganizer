@@ -3,14 +3,15 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useRouter } from 'next/navigation';
 import { parseCookies, setCookie, destroyCookie } from 'nookies';
+import { refreshTokenFetch } from '../hooks/Userdata';
 
 const AuthContext = createContext({
   user: null,
   loading: true,
   login: (token) => {},
   logout: () => {},
-  refreshAccessToken: () => {},
   email: null,
+  monitorToken: (token) => {},
 });
 
 export const AuthProvider = ({ children }) => {
@@ -57,26 +58,32 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const refreshAccessToken = async () => {
-    const { accessToken } = parseCookies();
-    if (!accessToken) {
-      logout();
-      return;
+  const isTokenExpired = (token) => {
+    const currentTime = Math.floor(Date.now() / 1000);
+    return token.exp < currentTime;
+  }
+
+
+    const monitorToken =(token) => {
+      const decoded = decodeAccessToken(token);
+      if (isTokenExpired(decoded)) {
+        refreshTokenFetch(token).then(success => {
+          if (!success) {
+            logout();
+          }
+        });
+      }
+    
     }
 
-    const decodedToken = decodeAccessToken(accessToken);
-    if (decodedToken) {
-      setUser(decodedToken);
-    } else {
-      logout();
-    }
-  };
+
+
 
   const emailClaim = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress';
   const email = user ? user[emailClaim] : '';
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, refreshAccessToken, email }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, email, monitorToken }}>
       {children}
     </AuthContext.Provider>
   );

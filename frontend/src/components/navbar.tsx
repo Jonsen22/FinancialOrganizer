@@ -2,7 +2,7 @@
 import React from "react";
 import { useAuth } from "../contexts/authContext";
 
-const navbar = () => {
+const Navbar = () => {
     const {user, logout, email} = useAuth();
     
     return(
@@ -12,11 +12,11 @@ const navbar = () => {
                 <span className="text-text">{email}</span>
             </div>
             <div className="mr-2">
-                <span onClick={logout} className="text-text cursor-pointer hover:text-textHighlight">Logout</span>
+                <button onClick={logout} className="text-text cursor-pointer hover:text-textHighlight">Logout</button>
             </div>
         </div>
     )
 
 };
 
-export default navbar;
+export default Navbar;

@@ -40,7 +40,7 @@ interface Balance {
 }
 
 const Dashboard = () => {
-  const { user, loading, login } = useAuth(); // Get loading state from auth context
+  const { user, loading, login, monitorToken } = useAuth(); // Get loading state from auth context
   const router = useRouter();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [error, setError] = useState("");
@@ -56,7 +56,7 @@ const Dashboard = () => {
   const fetchTransactions = async () => {
     if (localStorage.getItem("AccessToken")) {
       const result = await getTransactions(localStorage.getItem("AccessToken"));
-      console.log("Fetched transactions:", result);
+      // console.log("Fetched transactions:", result);
       if (typeof result === "string" && result.startsWith("Error:")) {
         setError(result);
       } else {
@@ -69,9 +69,12 @@ const Dashboard = () => {
 
 
   useEffect(() => {
-    if (localStorage.getItem("AccessToken")) {
-      login(localStorage.getItem("AccessToken"))
+    var token = localStorage.getItem("AccessToken")
+    console.log(token)
+    if (token) {
+      login(token)
       fetchTransactions();
+      monitorToken(token)
     }
   }, []);
 
@@ -117,15 +120,15 @@ const Dashboard = () => {
     });
 
     // console.log("Income and expense data per bank account:", data);
-    return Object.values(data); // Convert the object to an array of values
+    return Object.values(data); 
   };
 
   if (loading) {
-    return <div>Loading...</div>; // Show loading state while checking authentication
+    return <div>Loading...</div>; 
   }
 
   if (!user) {
-    return <div>User not authenticated</div>; // Handle unauthenticated state
+    return <div>User not authenticated</div>; 
   }
 
   return (

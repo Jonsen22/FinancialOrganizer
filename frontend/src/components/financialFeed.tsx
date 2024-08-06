@@ -45,7 +45,7 @@ const Feed = ({ transactions = [], setMonth, updateTransaction, deleteTransactio
     transactions = [];
   }
 
-  // console.log(transactions)
+  console.log(transactions)
 
   const year = new Date().getFullYear();
   const presentMonth = new Date().getMonth() + 1;

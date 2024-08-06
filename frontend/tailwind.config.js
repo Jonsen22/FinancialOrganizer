@@ -20,6 +20,7 @@ module.exports = {
         card: "rgba(var(--card))",
         border: "rgba(var(--border))",
         error:  "rgba(var(--error))",
+        textHighlight: "rgba(var(--textHighlight))",
       }
     },
   },
