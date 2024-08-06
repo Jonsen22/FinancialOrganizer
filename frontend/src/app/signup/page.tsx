@@ -42,10 +42,10 @@ const SignUp = () => {
         return;
       }
 
-      var response = await registerUser(email, password);
+      let response = await registerUser(email, password);
       // console.log(response);
       if(response.status == 200){
-        var loginResponse = await loginUser(email, password);
+        let loginResponse = await loginUser(email, password);
         if(loginResponse.status == 200)
           handleLoginSuccess(loginResponse);
       }

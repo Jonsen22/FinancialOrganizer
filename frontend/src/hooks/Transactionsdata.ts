@@ -13,17 +13,6 @@ interface Transaction {
   type: string;
 }
 
-interface editTransaction {
-  transactionId: number;
-  bankAccountId: number;
-  categoryId: number;
-  name: string;
-  value: number;
-  date: string; 
-  description: string;
-  recurring: string;
-  type: string;
-}
 
 export async function getTransactions(_token) {
     let url = API_URL +'/api/Transaction/GetTransactionsByUser';
@@ -59,7 +48,7 @@ export async function postTransaction(_token, transaction: Transaction ){
   }
 }
 
-export async function putTransaction(_token, transactionId: number, transaction: editTransaction ){
+export async function putTransaction(_token, transactionId: number, transaction: Transaction ){
   let url = API_URL +'/api/Transaction?transactionId='+transactionId
 
   try{

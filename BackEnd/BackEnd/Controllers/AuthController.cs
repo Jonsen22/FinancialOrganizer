@@ -14,17 +14,14 @@ namespace BackEnd.Controllers
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly IConfiguration _configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public AuthController(UserManager<IdentityUser> userManager,
                               SignInManager<IdentityUser> signInManager,
-                              IConfiguration configuration,
                               IHttpContextAccessor httpContextAccessor)
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
         }
 

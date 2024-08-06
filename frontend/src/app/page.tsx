@@ -19,7 +19,7 @@ const Home = () => {
 
   const handleLoginSuccess = (response: { data: { token: any } }) => {
     
-    var token = null;
+   let token = null;
 
     // if (!rememberMe) {
     //   token = response.data.token;
@@ -60,7 +60,7 @@ const Home = () => {
         return;
       }
 
-      var response = await loginUser(email, password, rememberMe);
+      let response = await loginUser(email, password, rememberMe);
       // console.log(response)
 
       if (response.title == "Unauthorized") setError("wrong email or password");

@@ -115,7 +115,7 @@ const Modal = ({
   }
 
   const handleSubmit = async () => {
-    var updatedValue = value;
+    let updatedValue = value;
     if (type == "Expense") updatedValue = value * -1;
 
     const transaction: Transaction = {

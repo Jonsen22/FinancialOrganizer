@@ -1,7 +1,7 @@
 const feedCard = ({ transaction, deleteTransaction, handleEditModal: putTransaction }) => {
     const color = transaction.category.colorhex;
 
-    var value = transaction.value;
+    let value = transaction.value;
 
     if(value < 0)
         value = value*-1;

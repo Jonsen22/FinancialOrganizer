@@ -69,7 +69,7 @@ const Dashboard = () => {
 
 
   useEffect(() => {
-    var token = localStorage.getItem("AccessToken")
+    let token = localStorage.getItem("AccessToken")
     console.log(token)
     if (token) {
       login(token)
